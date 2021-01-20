@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block title %}我的网站|首页{% endblock %}
+
+{% block header_extends %}
+    <link rel="stylesheet" type="text/css" href="{% static 'home.css' %}">
+    <script type="text/javascript" src="{% static 'highcharts.js' %}"></script>
+{% endblock %}
+
+{% block nav_home_active %}active{% endblock %}
+
+{% block content %}
+    <h3 class="home-content">
+        Welcome To My Site, Enjoy yourself！
+    </h3>
+    <!-- 图表容器DOM -->
+    <div id="chart"></div>
+    <div class="hot-dat">
+        <h3>今天热门点击</h3>
+        <ul>
+            {% for hot_dat in today_hot_dat %}
+                <li>
+                    <a href="{% url 'blog_detail' hot_dat.content_object.pk %}">
+                        {{ hot_dat.content_object.title }}
+                    </a>
+                    ({{ hot_dat.read_num }})
+                </li>
+            {% empty %}
+                <li>暂无</li>   
+            {% endfor %}
+        </ul>       
+    </div>
+    <div class="hot-dat">
+        <h3>7天内热门博客</h3>
+        <ul>
+            {% for hot_blog in hot_blogs_7days %}
+                <li>
+                    <a href="{% url 'blog_detail' hot_blog.pk %}">
+                        {{ hot_blog.title }}
+                    </a>
+                    ({{ hot_blog.read_num_sum }})
+                </li>
+            {% empty %}
+                <li>暂无</li>   
+            {% endfor %}
+        </ul>        
+    </div>
+    <script>
+        // 图表配置
+        var options = {
+            chart: { type: 'line' },                //指定图表的类型
+            title: { text: '博客阅读统计' },          // 标题
+            xAxis: {
+                categories: {{ dates|safe }},  // x 轴分类
+                tickmarkPlacement: 'on',
+                title: { text: '前七日阅读量变化' },
+            },
+            yAxis: {
+                title: { text: null },              // y 轴标题
+                labels: { enabled : false },           //去掉y轴标题
+                gridLineDashStyle: 'Dash',           // 虚线
+            },
+            series: [{                              // 数据列
+                name: '阅读次数',                        // 数据列名
+                data: {{ read_nums }},                     // 数据
+            }],
+            legend: { enabled : false },             //去掉图例
+            credits: { enabled : false },             //去掉版权信息
+            plotOptions: {
+                line: {
+                    dataLabels:{ enabled: true}
+                }
+            },
+        };
+        // 图表初始化函数
+        var chart = Highcharts.chart('chart', options);
+    </script>
+{% endblock %}
